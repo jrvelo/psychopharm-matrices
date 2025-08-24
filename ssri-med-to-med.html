@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSRI Med-to-Med Matrix</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 2.2em;
+        }
+
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .instructions {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .instructions h3 {
+            color: #333;
+            margin-top: 0;
+        }
+
+        .student-info {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .student-info h3 {
+            color: #333;
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+
+        #studentName {
+            width: 300px;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+
+        #studentName:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+
+        .matrix-container {
+            background: white;
+            border-radius: 10px;
+            overflow-x: auto;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .matrix-table {
+            width: 100%;
+            min-width: 1200px;
+            border-collapse: collapse;
+        }
+
+        .matrix-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 8px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        .matrix-table th.category-header {
+            background: #34495e;
+            text-align: left;
+            width: 180px;
+            position: sticky;
+            left: 0;
+            z-index: 10;
+        }
+
+        .matrix-table td {
+            padding: 12px 8px;
+            text-align: center;
+            border-bottom: 1px solid #e0e0e0;
+            vertical-align: middle;
+        }
+
+        .matrix-table td.category {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+            text-align: left;
+            border-right: 2px solid #e0e0e0;
+            position: sticky;
+            left: 0;
+            z-index: 5;
+            font-size: 0.95em;
+        }
+
+        .dropdown {
+            width: 100%;
+            padding: 6px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.85em;
+            background: white;
+            cursor: pointer;
+        }
+
+        .dropdown:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+
+        .dropdown.correct {
+            border-color: #27ae60;
+            background-color: #d5f4e6;
+        }
+
+        .dropdown.incorrect {
+            border-color: #e74c3c;
+            background-color: #fdf2f2;
+        }
+
+        .submit-section {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .feedback {
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .feedback.success {
+            background-color: #d5f4e6;
+            color: #27ae60;
+            border: 2px solid #27ae60;
+        }
+
+        .feedback.error {
+            background-color: #fdf2f2;
+            color: #e74c3c;
+            border: 2px solid #e74c3c;
+        }
+
+        .correct-answers {
+            background: #e8f5e8;
+            border: 1px solid #4caf50;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .correct-answers h4 {
+            color: #2e7d32;
+            margin-top: 0;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>SSRI Med-to-Med Matrix</h1>
+        <p>Compare individual SSRIs and learn what makes each unique</p>
+    </div>
+
+    <div class="instructions">
+        <h3>🔍 Instructions</h3>
+        <p><strong>Prerequisites:</strong> Complete the SSRI Foundational Matrix first to understand what all SSRIs share.</p>
+        <p><strong>Your task:</strong> Use the dropdown menus to match each SSRI with its specific characteristics. Focus on what makes each medication unique within the SSRI class.</p>
+        <p><strong>Think comparatively:</strong> Consider the differences between medications - their advantages, disadvantages, and clinical considerations.</p>
+        <p><strong>Feedback:</strong> You'll receive immediate feedback. Master this (100%) before proceeding to the next drug class.</p>
+    </div>
+
+    <div class="student-info">
+        <h3>Student Information</h3>
+        <div style="margin-bottom: 20px;">
+            <label for="studentName" style="display: block; margin-bottom: 5px; font-weight: 600;">Your Name:</label>
+            <input type="text" id="studentName" placeholder="Enter your full name" required>
+        </div>
+    </div>
+
+    <div class="matrix-container">
+        <table class="matrix-table">
+            <thead>
+                <tr>
+                    <th class="category-header">Characteristic</th>
+                    <th>Fluoxetine<br>(Prozac)</th>
+                    <th>Sertraline<br>(Zoloft)</th>
+                    <th>Paroxetine<br>(Paxil)</th>
+                    <th>Citalopram<br>(Celexa)</th>
+                    <th>Escitalopram<br>(Lexapro)</th>
+                    <th>Fluvoxamine<br>(Luvox)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="category">Notable Distinguishing Feature</td>
+                    <td>
+                        <select class="dropdown" data-med="fluoxetine" data-category="distinguishing">
+                            <option value="">Select...</option>
+                            <option value="longest-half-life">Longest half-life in class (1-3 days)</option>
+                            <option value="mixed-anxiety-depression">Excellent for mixed depression and anxiety</option>
+                            <option value="highest-sexual-discontinuation">Highest sexual side effects and discontinuation syndrome risk</option>
+                            <option value="dose-dependent-qt">Dose-dependent QT prolongation</option>
+                            <option value="s-enantiomer">Active S-enantiomer of citalopram</option>
+                            <option value="ocd-specific">Specifically FDA approved for OCD</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select class="dropdown" data-med="sertraline" data-category="distinguishing">
+                            <option value="">Select...</option>
+                            <option value="longest-half-life">Longest half-life in class (1-3 days)</option>
+                            <option value="most-activating">Most activating/energizing effects</option>
+                            <option value="highest-anticholinergic">Highest anticholinergic effects</option>
+                            <option value="dose-dependent-qt">Dose-dependent QT prolongation</option>
+                            <option value="s-enantiomer">Active S-enantiomer of citalopram</option>
+                            <option value="ocd-specific">Specifically FDA approved for OCD</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select class="dropdown" data-med="paroxetine" data-category="distinguishing">
+                            <option value="">Select...</option>
+                            <option value="longest-half-life">Longest half-life in class (1-3 days)</option>
+                            <option value="most-activating">Most activating/energizing effects</option>
+                            <option value="highest-anticholinergic">Highest anticholinergic effects</option>
+                            <option value="dose-dependent-qt">Dose-dependent QT prolongation</option>
+                            <option value="s-enantiomer">Active S-enantiomer of citalopram</option>
+                            <option value="ocd-specific">Specifically FDA approved for OCD</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select class="dropdown" data-med="citalopram" data-category="distinguishing">
+                            <option value="">Select...</option>
+                            <option value="longest-half-life">Longest half-life in class (1-3 days)</option>
+                            <option value="most-activating">Most activating/energizing effects</option>
+                            <option value="highest-anticholinergic">Highest anticholinergic effects</option>
+                            <option value="dose-dependent-qt">Dose-dependent QT prolongation</option>
+                            <option value="s-enantiomer">Active S-enantiomer of citalopram</option>
+                            <option value="ocd-specific">Specifically FDA approved for OCD</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select class="dropdown" data-med="escitalopram" data-category="distinguishing">
+                            <option value="">Select...</option>
+                            <option value="longest-half-life">Longest half-life in class (1-3 days)</option>
+                            <option value="most-activating">Most activating/energizing effects</option>
+                            <option value="highest-anticholinergic">Highest anticholinergic effects</option>
+                            <option value="dose-dependent-qt">Dose-dependent QT prolongation</option>
+                            <option value="s-enantiomer">Active S-enantiomer of citalopram</option>
+                            <option value="ocd-specific">Specifically FDA approved for OCD</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select class="dropdown" data-med="fluvoxamine" data-category="distinguishing">
+                            <option value="">Select...</option>
+                            <option value="longest-half-life">Longest half-life in class (1-3 days)</option>
+                            <option value="most-activating">Most activating/energizing effects</option>
+                            <option value="highest-anticholinergic">Highest anticholinergic effects</option>
+                            <option value="dose-dependent-qt">Dose-dependent QT prolongation</option>
+                            <option value="s-enantiomer">Active S-enantiomer of citalopram</option>
+                            <option value="ocd-specific">Specifically FDA approved for OCD</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="category">When to Consider as First Choice</td>
+                    <td>
+                        <select class="dropdown" data-med="fluoxetine" data-category="first-choice">
+                            <option value="">Select...</option>
+                            <option value="adherence-concerns">Adherence concerns (long half-life forgives missed doses)</option>
+                            <option value="anxiety-with-depression">Comorbid anxiety with depression</option>
+                            <option value="elderly-patients">Elderly patients (fewer interactions)</option>
+                            <option value="cardiac-concerns">Patients with cardiac concerns</option>
+                            <option value="ocd-primary">OCD as primary indication</option>
+                            <option value="na">NA - no specific first-choice scenarios</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select class="dropdown" data-med="sertraline" data-category="first-choice">
+                            <option value="">Select...</option>
+                            <option value="adherence-concerns">Adherence concerns (long half-life forgives missed doses)</option>
+                            <option value="anxiety-with-depression">Comorbid anxiety with depression</option>
+                            <option value="elderly-patients">Elderly patients (fewer interactions)</option>
+                            <option value="cardiac-concerns">Patients with cardiac concerns</option>
+                            <option value="ocd-primary">OCD as primary indication</option>
+                            <option value="na">NA - no specific first-choice scenarios</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select class="dropdown" data-med="paroxetine" data-category="first-choice">
+                            <option value="">Select...</option>
+                            <option value="adherence-concerns">Adherence concerns (long half-life forgives missed doses)</option>
+                            <option value="anxiety-with-depression">Comorbid anxiety with depression</option>
+                            <option value="elderly-patients">Elderly patients (fewer interactions)</option>
+                            <option value="cardiac-concerns">Patients with cardiac concerns</option>
+                            <option value="ocd-primary">OCD as primary indication</option>
+                            <option value="na">NA - no specific first-choice scenarios</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select class="dropdown" data-med="citalopram" data-category="first-choice">
+                            <option value="">Select...</option>
+                            <option value="adherence-concerns">Adherence concerns (long half-life forgives missed doses)</option>
+                            <option value="anxiety-with-depression">Comorbid anxiety with depression</option>
+                            <option value="elderly-patients">Elderly patients (fewer interactions)</option>
+                            <option value="cardiac-concerns">Patients with cardiac concerns</option>
+                            <option value="ocd-primary">OCD as primary indication</option>
+                            <option value="na">NA - no specific first-choice scenarios</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select class="dropdown" data-med="escitalopram" data-category="first-choice">
+                            <option value="">Select...</option>
+                            <option value="adherence-concerns">Adherence concerns (long half-life forgives missed doses)</option>
+                            <option value="anxiety-with-depression">Comorbid anxiety with depression</option>
+                            <option value="elderly-patients">Elderly patients (fewer interactions)</option>
+                            <option value="cardiac-concerns">Patients with cardiac concerns</option>
+                            <option value="ocd-primary">OCD as primary indication</option>
+                            <option value="na">NA - no specific first-choice scenarios</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select class="dropdown" data-med="fluvoxamine" data-category="first-choice">
+                            <option value="">Select...</option>
+                            <option value="adherence-concerns">Adherence concerns (long half-life forgives missed doses)</option>
+                            <option value="anxiety-with-depression">Comorbid anxiety with depression</option>
+                            <option value="elderly-patients">Elderly patients (fewer interactions)</option>
+                            <option value="cardiac-concerns">Patients with cardiac concerns</option>
+                            <option value="ocd-primary">OCD as primary indication</option>
+                            <option value="na">NA - no specific first-choice scenarios</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="category">When to Avoid if Possible</td>
+                    <td>
+                        <select class="dropdown" data-med="fluoxetine" data-category="avoid-when">
+                            <option value="">Select...</option>
+                            <option value="drug-interactions">Multiple drug interactions possible (CYP2D6 inhibition)</option>
+                            <option value="anticholinergic-sensitivity">Anticholinergic side effects major concern</option>
+                            <option value="withdrawal-risk">High withdrawal/discontinuation syndrome risk</option>
+                            <option value="qt-prolongation">QT prolongation concerns</option>
+                            <option value="sexual-dysfunction">Sexual dysfunction major concern</option>
+                            <option value="na">NA - no specific avoidance scenarios</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select class="dropdown" data-med="sertraline" data-category="avoid-when">
+                            <option value="">Select...</option>
+                            <option value="drug-interactions">Multiple drug interactions possible (CYP2D6 inhibition)</option>
+                            <option value="anticholinergic-sensitivity">Anticholinergic side effects major concern</option>
+                            <option value="withdrawal-risk">High withdrawal/discontinuation syndrome risk</option>
+                            <option value="qt-prolongation">QT prolongation concerns</option>
+                            <option value="sexual-dysfunction">Sexual dysfunction major concern</option>
+                            <option value="na">NA - no specific avoidance scenarios</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select class="dropdown" data-med="paroxetine" data-category="avoid-when">
+                            <option value="">Select...</option>
+                            <option value="drug-interactions">Multiple drug interactions possible (CYP2D6 inhibition)</option>
+                            <option value="anticholinergic-sensitivity">Anticholinergic side effects major concern</option>
+                            <option value="withdrawal-risk">High withdrawal/discontinuation syndrome risk</option>
+                            <option value="qt-prolongation">QT prolongation concerns</option>
+                            <option value="sexual-dysfunction">Sexual dysfunction major concern</option>
+                            <option value="na">NA - no specific avoidance scenarios</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select class="dropdown" data-med="citalopram" data-category="avoid-when">
+                            <option value="">Select...</option>
+                            <option value="drug-interactions">Multiple drug interactions possible (CYP2D6 inhibition)</option>
+                            <option value="anticholinergic-sensitivity">Anticholinergic side effects major concern</option>
+                            <option value="withdrawal-risk">High withdrawal/discontinuation syndrome risk</option>
+                            <option value="qt-prolongation">QT prolongation concerns</option>
+                            <option value="sexual-dysfunction">Sexual dysfunction major concern</option>
+                            <option value="na">NA - no specific avoidance scenarios</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select class="dropdown" data-med="escitalopram" data-category="avoid-when">
+                            <option value="">Select...</option>
+                            <option value="drug-interactions">Multiple drug interactions possible (CYP2D6 inhibition)</option>
+                            <option value="anticholinergic-sensitivity">Anticholinergic side effects major concern</option>
+                            <option value="withdrawal-risk">High withdrawal/discontinuation syndrome risk</option>
+                            <option value="qt-prolongation">QT prolongation concerns</option>
+                            <option value="sexual-dysfunction">Sexual dysfunction major concern</option>
+                            <option value="na">NA - no specific avoidance scenarios</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select class="dropdown" data-med="fluvoxamine" data-category="avoid-when">
+                            <option value="">Select...</option>
+                            <option value="drug-interactions">Multiple drug interactions possible (CYP2D6 inhibition)</option>
+                            <option value="anticholinergic-sensitivity">Anticholinergic side effects major concern</option>
+                            <option value="withdrawal-risk">High withdrawal/discontinuation syndrome risk</option>
+                            <option value="qt-prolongation">QT prolongation concerns</option>
+                            <option value="sexual-dysfunction">Sexual dysfunction major concern</option>
+                            <option value="na">NA - no specific avoidance scenarios</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="category">Primary Metabolic Pathway</td>
+                    <td>
+                        <select class="dropdown" data-med="fluoxetine" data-category="metabolism">
+                            <option value="">Select...</option>
+                            <option value="cyp2d6-major">CYP2D6 (major pathway)</option>
+                            <option value="cyp3a4-major">CYP3A4 (major pathway)</option>
+                            <option value="cyp2c19-major">CYP2C19 (major pathway)</option>
+                            <option value="cyp1a2-major">CYP1A2 (major pathway)</option>
+                            <option value="multiple-minor">Multiple pathways (no single major)</option>
+                            <option value="glucuronidation">Direct glucuronidation</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select class="dropdown" data-med="sertraline" data-category="metabolism">
+                            <option value="">Select...</option>
+                            <option value="cyp2d6-major">CYP2D6 (major pathway)</option>
+                            <option value="cyp3a4-major">CYP3A4 (major pathway)</option>
+                            <option value="cyp2c19-major">CYP2C19 (major pathway)</option>
+                            <option value="cyp1a2-major">CYP1A2 (major pathway)</option>
+                            <option value="multiple-minor">Multiple pathways (no single major)</option>
+                            <option value="glucuronidation">Direct glucuronidation</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select class="dropdown" data-med="paroxetine" data-category="metabolism">
+                            <option value="">Select...</option>
+                            <option value="cyp2d6-major">CYP2D6 (major pathway)</option>
+                            <option value="cyp3a4-major">CYP3A4 (major pathway)</option>
+                            <option value="cyp2c19-major">CYP2C19 (major pathway)</option>
+                            <option value="cyp1a2-major">CYP1A2 (major pathway)</option>
+                            <option value="multiple-minor">Multiple pathways (no single major)</option>
+                            <option value="glucuronidation">Direct glucuronidation</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select class="dropdown" data-med="citalopram" data-category="metabolism">
+                            <option value="">Select...</option>
+                            <option value="cyp2d6-major">CYP2D6 (major pathway)</option>
+                            <option value="cyp3a4-major">CYP3A4 (major pathway)</option>
+                            <option value="cyp2c19-major">CYP2C19 (major pathway)</option>
+                            <option value="cyp1a2-major">CYP1A2 (major pathway)</option>
+                            <option value="multiple-minor">Multiple pathways (no single major)</option>
+                            <option value="glucuronidation">Direct glucuronidation</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select class="dropdown" data-med="escitalopram" data-category="metabolism">
+                            <option value="">Select...</option>
+                            <option value="cyp2d6-major">CYP2D6 (major pathway)</option>
+                            <option value="cyp3a4-major">CYP3A4 (major pathway)</option>
+                            <option value="cyp2c19-major">CYP2C19 (major pathway)</option>
+                            <option value="cyp1a2-major">CYP1A2 (major pathway)</option>
+                            <option value="multiple-minor">Multiple pathways (no single major)</option>
+                            <option value="glucuronidation">Direct glucuronidation</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select class="dropdown" data-med="fluvoxamine" data-category="metabolism">
+                            <option value="">Select...</option>
+                            <option value="cyp2d6-major">CYP2D6 (major pathway)</option>
+                            <option value="cyp3a4-major">CYP3A4 (major pathway)</option>
+                            <option value="cyp2c19-major">CYP2C19 (major pathway)</option>
+                            <option value="cyp1a2-major">CYP1A2 (major pathway)</option>
+                            <option value="multiple-minor">Multiple pathways (no single major)</option>
+                            <option value="glucuronidation">Direct glucuronidation</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="category">Unique Exceptions/Considerations</td>
+                    <td>
+                        <select class="dropdown" data-med="fluoxetine" data-category="unique-considerations">
+                            <option value="">Select...</option>
+                            <option value="long-washout">Requires 5-week washout before MAOIs (long half-life)</option>
+                            <option value="pregnancy-concerns">Special pregnancy considerations vs other SSRIs</option>
+                            <option value="weight-effects">Notable weight effects (gain/loss)</option>
+                            <option value="drug-level-monitoring">Requires therapeutic drug level monitoring</option>
+                            <option value="dosing-schedule">Unique dosing schedule requirements</option>
+                            <option value="na">NA - no unique considerations</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select class="dropdown" data-med="sertraline" data-category="unique-considerations">
+                            <option value="">Select...</option>
+                            <option value="long-washout">Requires 5-week washout before MAOIs (long half-life)</option>
+                            <option value="pregnancy-concerns">Special pregnancy considerations vs other SSRIs</option>
+                            <option value="weight-effects">Notable weight effects (gain/loss)</option>
+                            <option value="drug-level-monitoring">Requires therapeutic drug level monitoring</option>
+                            <option value="dosing-schedule">Unique dosing schedule requirements</option>
+                            <option value="na">NA - no unique considerations</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select class="dropdown" data-med="paroxetine" data-category="unique-considerations">
+                            <option value="">Select...</option>
+                            <option value="long-washout">Requires 5-week washout before MAOIs (long half-life)</option>
+                            <option value="pregnancy-concerns">Special pregnancy considerations vs other SSRIs</option>
+                            <option value="weight-effects">Notable weight effects (gain/loss)</option>
+                            <option value="drug-level-monitoring">Requires therapeutic drug level monitoring</option>
+                            <option value="dosing-schedule">Unique dosing schedule requirements</option>
+                            <option value="na">NA - no unique considerations</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select class="dropdown" data-med="citalopram" data-category="unique-considerations">
+                            <option value="">Select...</option>
+                            <option value="long-washout">Requires 5-week washout before MAOIs (long half-life)</option>
+                            <option value="pregnancy-concerns">Special pregnancy considerations vs other SSRIs</option>
+                            <option value="weight-effects">Notable weight effects (gain/loss)</option>
+                            <option value="drug-level-monitoring">Requires therapeutic drug level monitoring</option>
+                            <option value="dosing-schedule">Unique dosing schedule requirements</option>
+                            <option value="na">NA - no unique considerations</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select class="dropdown" data-med="escitalopram" data-category="unique-considerations">
+                            <option value="">Select...</option>
+                            <option value="long-washout">Requires 5-week washout before MAOIs (long half-life)</option>
+                            <option value="pregnancy-concerns">Special pregnancy considerations vs other SSRIs</option>
+                            <option value="weight-effects">Notable weight effects (gain/loss)</option>
+                            <option value="drug-level-monitoring">Requires therapeutic drug level monitoring</option>
+                            <option value="dosing-schedule">Unique dosing schedule requirements</option>
+                            <option value="na">NA - no unique considerations</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select class="dropdown" data-med="fluvoxamine" data-category="unique-considerations">
+                            <option value="">Select...</option>
+                            <option value="long-washout">Requires 5-week washout before MAOIs (long half-life)</option>
+                            <option value="pregnancy-concerns">Special pregnancy considerations vs other SSRIs</option>
+                            <option value="weight-effects">Notable weight effects (gain/loss)</option>
+                            <option value="drug-level-monitoring">Requires therapeutic drug level monitoring</option>
+                            <option value="dosing-schedule">Unique dosing schedule requirements</option>
+                            <option value="na">NA - no unique considerations</option>
+                        </select>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="submit-section">
+        <button class="submit-btn" onclick="checkAnswers()">Submit Med-to-Med Comparison</button>
+    </div>
+
+    <div id="feedback"></div>
+
+    <script>
+        // Correct answers based on current clinical knowledge (you should verify these match your curriculum)
+        const correctAnswers = {
+            'fluoxetine-distinguishing': 'longest-half-life',
+            'sertraline-distinguishing': 'mixed-anxiety-depression',
+            'paroxetine-distinguishing': 'highest-sexual-discontinuation',
+            'citalopram-distinguishing': 'dose-dependent-qt',
+            'escitalopram-distinguishing': 's-enantiomer',
+            'fluvoxamine-distinguishing': 'ocd-specific',
+            
+            'fluoxetine-first-choice': 'adherence-concerns',
+            'sertraline-first-choice': 'anxiety-with-depression',
+            'paroxetine-first-choice': 'anxiety-with-depression',
+            'citalopram-first-choice': 'elderly-patients',
+            'escitalopram-first-choice': 'elderly-patients',
+            'fluvoxamine-first-choice': 'ocd-primary',
+            
+            'fluoxetine-avoid-when': 'drug-interactions',
+            'sertraline-avoid-when': 'na',
+            'paroxetine-avoid-when': 'sexual-dysfunction',
+            'citalopram-avoid-when': 'qt-prolongation',
+            'escitalopram-avoid-when': 'na',
+            'fluvoxamine-avoid-when': 'drug-interactions',
+            
+            'fluoxetine-metabolism': 'cyp2c19-major',
+            'sertraline-metabolism': 'multiple-minor',
+            'paroxetine-metabolism': 'cyp2d6-major',
+            'citalopram-metabolism': 'cyp2c19-major',
+            'escitalopram-metabolism': 'cyp2c19-major',
+            'fluvoxamine-metabolism': 'cyp1a2-major',
+            
+            'fluoxetine-unique-considerations': 'long-washout',
+            'sertraline-unique-considerations': 'na',
+            'paroxetine-unique-considerations': 'pregnancy-concerns',
+            'citalopram-unique-considerations': 'na',
+            'escitalopram-unique-considerations': 'na',
+            'fluvoxamine-unique-considerations': 'dosing-schedule'
+        };
+
+        function checkAnswers() {
+            // Validate student name
+            const studentName = document.getElementById('studentName').value.trim();
+            if (!studentName) {
+                alert('Please enter your name before submitting.');
+                document.getElementById('studentName').focus();
+                return;
+            }
+
+            const dropdowns = document.querySelectorAll('.dropdown');
+            let allCorrect = true;
+            let incorrectAnswers = [];
+            let studentAnswers = {};
+
+            // Check if all questions are answered
+            let unanswered = 0;
+            dropdowns.forEach(dropdown => {
+                if (!dropdown.value) {
+                    unanswered++;
+                }
+            });
+
+            if (unanswered > 0) {
+                alert(`Please answer all questions. You have ${unanswered} unanswered question(s).`);
+                return;
+            }
+
+            // Reset previous styling
+            dropdowns.forEach(dropdown => {
+                dropdown.classList.remove('correct', 'incorrect');
+            });
+
+            dropdowns.forEach(dropdown => {
+                const med = dropdown.dataset.med;
+                const category = dropdown.dataset.category;
+                const key = `${med}-${category}`;
+                const selectedValue = dropdown.value;
+                const correctValue = correctAnswers[key];
+
+                // Store student's answer
+                studentAnswers[key] = {
+                    selected: selectedValue,
+                    correct: correctValue,
+                    isCorrect: selectedValue === correctValue
+                };
+
+                if (selectedValue === correctValue) {
+                    dropdown.classList.add('correct');
+                } else {
+                    dropdown.classList.add('incorrect');
+                    allCorrect = false;
+                    incorrectAnswers.push({
+                        med: med.charAt(0).toUpperCase() + med.slice(1),
+                        category: category.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+                        selected: dropdown.options[dropdown.selectedIndex].text,
+                        correct: dropdown.querySelector(`option[value="${correctValue}"]`).text
+                    });
+                }
+            });
+
+            // Submit to Google Sheets
+            submitToGoogleSheets(studentName, studentAnswers, allCorrect, 'SSRI-Med-to-Med');
+
+            const feedbackDiv = document.getElementById('feedback');
+            if (allCorrect) {
+                feedbackDiv.innerHTML = `
+                    <div class="feedback success">
+                        <h3>🎉 Outstanding SSRI Mastery, ${studentName}!</h3>
+                        <p>You've successfully identified the key distinguishing features of each SSRI! You now understand both what all SSRIs share AND what makes each one unique.</p>
+                        <p><strong>Clinical competency achieved:</strong> You can now make informed decisions about SSRI selection based on patient-specific factors, side effect profiles, and drug interactions.</p>
+                        <p><strong>Next step:</strong> You're ready to move on to the next antidepressant class (SNRIs, TCAs, or atypicals).</p>
+                    </div>
+                `;
+            } else {
+                let incorrectHTML = '<div class="feedback error">';
+                incorrectHTML += `<h3>⚠️ Review Required, ${studentName}</h3>`;
+                incorrectHTML += `<p>You had ${incorrectAnswers.length} incorrect selection(s). Understanding these distinctions is crucial for clinical decision-making. Please review and resubmit.</p>`;
+                incorrectHTML += '<div class="correct-answers">';
+                incorrectHTML += '<h4>Corrections needed:</h4>';
+                incorrectHTML += '<ul>';
+                incorrectAnswers.forEach(item => {
+                    incorrectHTML += `<li><strong>${item.med}</strong> - ${item.category}: The correct answer is "${item.correct}"</li>`;
+                });
+                incorrectHTML += '</ul>';
+                incorrectHTML += '</div>';
+                incorrectHTML += '</div>';
+                feedbackDiv.innerHTML = incorrectHTML;
+            }
+
+            // Scroll to feedback
+            feedbackDiv.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function submitToGoogleSheets(studentName, answers, allCorrect, matrixType) {
+            // Prepare data for Google Sheets
+            const timestamp = new Date().toISOString();
+            const score = Object.values(answers).filter(a => a.isCorrect).length;
+            const totalQuestions = Object.keys(answers).length;
+            const percentage = Math.round((score / totalQuestions) * 100);
+
+            const submissionData = {
+                timestamp: timestamp,
+                studentName: studentName,
+                matrixType: matrixType,
+                score: score,
+                totalQuestions: totalQuestions,
+                percentage: percentage,
+                passed: allCorrect,
+                answers: answers
+            };
+
+            // Add loading indicator to button
+            const submitBtn = document.querySelector('.submit-btn');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = 'Submitting... <span class="loading"></span>';
+            submitBtn.disabled = true;
+
+            // Submit to Google Apps Script web app
+            const webAppUrl = 'https://script.google.com/macros/s/AKfycbxjQUWN3g2JkzbjP-LfcgfhqBl7_GGynChJva0dScQpf5TaHM3OY-_o-_XqODS6dQWh/exec'; // Replace with actual URL
+            
+            fetch(webAppUrl, {
+                method: 'POST',
+                mode: 'cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(submissionData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Successfully submitted to Google Sheets:', data);
+                // Reset button
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            })
+            .catch(error => {
+                console.error('Error submitting to Google Sheets:', error);
+                // Reset button even if there's an error
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            });
+        }
+    </script>
+</body>
+</html>

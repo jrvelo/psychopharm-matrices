@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSRI Foundational Matrix</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 2.2em;
+        }
+
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .instructions {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .instructions h3 {
+            color: #333;
+            margin-top: 0;
+        }
+
+        .student-info {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .student-info h3 {
+            color: #333;
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+
+        #studentName {
+            width: 300px;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+
+        #studentName:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+
+        .matrix-container {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .matrix-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .matrix-table th {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 15px 20px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .matrix-table th.category-header {
+            text-align: left;
+            width: 300px;
+        }
+
+        .matrix-table td {
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+            vertical-align: middle;
+        }
+
+        .matrix-table td.category {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+            text-align: left;
+            border-right: 2px solid #e0e0e0;
+            font-size: 1em;
+        }
+
+        .dropdown {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 0.95em;
+            background: white;
+            cursor: pointer;
+        }
+
+        .dropdown:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+
+        .dropdown.correct {
+            border-color: #27ae60;
+            background-color: #d5f4e6;
+        }
+
+        .dropdown.incorrect {
+            border-color: #e74c3c;
+            background-color: #fdf2f2;
+        }
+
+        .submit-section {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .feedback {
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .feedback.success {
+            background-color: #d5f4e6;
+            color: #27ae60;
+            border: 2px solid #27ae60;
+        }
+
+        .feedback.error {
+            background-color: #fdf2f2;
+            color: #e74c3c;
+            border: 2px solid #e74c3c;
+        }
+
+        .correct-answers {
+            background: #e8f5e8;
+            border: 1px solid #4caf50;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .correct-answers h4 {
+            color: #2e7d32;
+            margin-top: 0;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>SSRI Foundational Matrix</h1>
+        <p>Master the shared characteristics of all SSRIs before exploring individual differences</p>
+    </div>
+
+    <div class="instructions">
+        <h3>📚 Instructions</h3>
+        <p><strong>Your task:</strong> Demonstrate your understanding of the core features that ALL SSRIs share. Select the best answer for each foundational concept.</p>
+        <p><strong>Purpose:</strong> This builds your fundamental knowledge of SSRIs as a drug class. Once you master these shared characteristics, you'll be ready to learn how individual SSRIs differ from each other.</p>
+        <p><strong>Feedback:</strong> You'll receive immediate feedback. Master this foundation (100%) before proceeding to individual SSRI differences.</p>
+    </div>
+
+    <div class="student-info">
+        <h3>Student Information</h3>
+        <div style="margin-bottom: 20px;">
+            <label for="studentName" style="display: block; margin-bottom: 5px; font-weight: 600;">Your Name:</label>
+            <input type="text" id="studentName" placeholder="Enter your full name" required>
+        </div>
+    </div>
+
+    <div class="matrix-container">
+        <table class="matrix-table">
+            <thead>
+                <tr>
+                    <th class="category-header">Foundation Concept</th>
+                    <th>All SSRIs Share This Characteristic</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="category">Main Advantage of SSRI Class</td>
+                    <td>
+                        <select class="dropdown" data-category="main-advantage">
+                            <option value="">Select...</option>
+                            <option value="first-line-favorable">First-line treatment for depression/anxiety due to favorable side effect profile</option>
+                            <option value="immediate-relief">Provide immediate symptom relief within 24 hours</option>
+                            <option value="no-side-effects">Completely free of side effects</option>
+                            <option value="cure-depression">Permanently cure depression and anxiety</option>
+                            <option value="work-for-everyone">Effective for 100% of patients</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="category">Primary Mechanism of Action (MOA)</td>
+                    <td>
+                        <select class="dropdown" data-category="moa">
+                            <option value="">Select...</option>
+                            <option value="serotonin-reuptake">Selective inhibition of serotonin reuptake</option>
+                            <option value="dopamine-block">Dopamine receptor antagonism</option>
+                            <option value="norepinephrine-reuptake">Norepinephrine reuptake inhibition</option>
+                            <option value="gaba-enhancement">GABA receptor enhancement</option>
+                            <option value="multiple-neurotransmitters">Non-selective multiple neurotransmitter effects</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="category">Top 3 Common Side Effects</td>
+                    <td>
+                        <select class="dropdown" data-category="common-sides">
+                            <option value="">Select...</option>
+                            <option value="gi-sexual-activation">GI upset (nausea), sexual dysfunction, initial activation/insomnia</option>
+                            <option value="sedation-weight-gain">Sedation, weight gain, dry mouth</option>
+                            <option value="tremor-stiffness-drooling">Tremor, muscle stiffness, drooling</option>
+                            <option value="dizziness-hypotension-falls">Dizziness, hypotension, falls</option>
+                            <option value="no-common-sides">No common side effects</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="category">Top Serious but Rare Risks</td>
+                    <td>
+                        <select class="dropdown" data-category="serious-risks">
+                            <option value="">Select...</option>
+                            <option value="hyponatremia-bleeding">Hyponatremia (especially elderly), increased bleeding risk</option>
+                            <option value="liver-failure">Acute liver failure and hepatotoxicity</option>
+                            <option value="cardiac-arrest">Cardiac arrest and sudden death</option>
+                            <option value="kidney-failure">Acute kidney failure</option>
+                            <option value="no-serious-risks">No serious risks</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="category">When to Avoid</td>
+                    <td>
+                        <select class="dropdown" data-category="when-avoid">
+                            <option value="">Select...</option>
+                            <option value="maoi-mania-bleeding">Concurrent MAOIs, untreated mania, high bleeding risk</option>
+                            <option value="kidney-disease">Severe kidney disease</option>
+                            <option value="liver-disease">Any liver impairment</option>
+                            <option value="heart-disease">Any heart condition</option>
+                            <option value="never-avoid">Never contraindicated</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="category">Main On-Label Use</td>
+                    <td>
+                        <select class="dropdown" data-category="main-use">
+                            <option value="">Select...</option>
+                            <option value="depression-anxiety-disorders">Major depression and various anxiety disorders</option>
+                            <option value="bipolar-disorder">Bipolar disorder and mania</option>
+                            <option value="schizophrenia-psychosis">Schizophrenia and psychotic disorders</option>
+                            <option value="adhd-attention">ADHD and attention disorders</option>
+                            <option value="pain-management">Chronic pain management</option>
+                        </select>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="submit-section">
+        <button class="submit-btn" onclick="checkAnswers()">Submit Foundational Knowledge</button>
+    </div>
+
+    <div id="feedback"></div>
+
+    <script>
+        // Correct answers for SSRI foundational matrix
+        const correctAnswers = {
+            'main-advantage': 'first-line-favorable',
+            'moa': 'serotonin-reuptake',
+            'common-sides': 'gi-sexual-activation',
+            'serious-risks': 'hyponatremia-bleeding',
+            'when-avoid': 'maoi-mania-bleeding',
+            'main-use': 'depression-anxiety-disorders'
+        };
+
+        function checkAnswers() {
+            // Validate student name
+            const studentName = document.getElementById('studentName').value.trim();
+            if (!studentName) {
+                alert('Please enter your name before submitting.');
+                document.getElementById('studentName').focus();
+                return;
+            }
+
+            const dropdowns = document.querySelectorAll('.dropdown');
+            let allCorrect = true;
+            let incorrectAnswers = [];
+            let studentAnswers = {};
+
+            // Check if all questions are answered
+            let unanswered = 0;
+            dropdowns.forEach(dropdown => {
+                if (!dropdown.value) {
+                    unanswered++;
+                }
+            });
+
+            if (unanswered > 0) {
+                alert(`Please answer all questions. You have ${unanswered} unanswered question(s).`);
+                return;
+            }
+
+            // Reset previous styling
+            dropdowns.forEach(dropdown => {
+                dropdown.classList.remove('correct', 'incorrect');
+            });
+
+            dropdowns.forEach(dropdown => {
+                const category = dropdown.dataset.category;
+                const selectedValue = dropdown.value;
+                const correctValue = correctAnswers[category];
+
+                // Store student's answer
+                studentAnswers[category] = {
+                    selected: selectedValue,
+                    correct: correctValue,
+                    isCorrect: selectedValue === correctValue
+                };
+
+                if (selectedValue === correctValue) {
+                    dropdown.classList.add('correct');
+                } else {
+                    dropdown.classList.add('incorrect');
+                    allCorrect = false;
+                    incorrectAnswers.push({
+                        category: category.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase()),
+                        selected: dropdown.options[dropdown.selectedIndex].text,
+                        correct: dropdown.querySelector(`option[value="${correctValue}"]`).text
+                    });
+                }
+            });
+
+            // Submit to Google Sheets
+            submitToGoogleSheets(studentName, studentAnswers, allCorrect, 'SSRI-Foundational');
+
+            const feedbackDiv = document.getElementById('feedback');
+            if (allCorrect) {
+                feedbackDiv.innerHTML = `
+                    <div class="feedback success">
+                        <h3>🎉 Outstanding Foundation Knowledge, ${studentName}!</h3>
+                        <p>You've mastered the core characteristics that all SSRIs share! You now have the solid foundation needed to understand how individual SSRIs differ from each other.</p>
+                        <p><strong>Next step:</strong> You're ready for the SSRI Med-to-Med Matrix, where you'll learn what makes each medication unique within this class.</p>
+                        <p><strong>Foundation achieved:</strong> You understand the shared advantages, MOA, side effects, risks, and clinical applications that define the SSRI class.</p>
+                    </div>
+                `;
+            } else {
+                let incorrectHTML = '<div class="feedback error">';
+                incorrectHTML += `<h3>⚠️ Foundation Review Needed, ${studentName}</h3>`;
+                incorrectHTML += `<p>You had ${incorrectAnswers.length} incorrect selection(s). These foundational concepts are essential before learning individual drug differences. Please review and resubmit.</p>`;
+                incorrectHTML += '<div class="correct-answers">';
+                incorrectHTML += '<h4>Foundational concepts to review:</h4>';
+                incorrectHTML += '<ul>';
+                incorrectAnswers.forEach(item => {
+                    incorrectHTML += `<li><strong>${item.category}:</strong> The correct answer is "${item.correct}"</li>`;
+                });
+                incorrectHTML += '</ul>';
+                incorrectHTML += '</div>';
+                incorrectHTML += '</div>';
+                feedbackDiv.innerHTML = incorrectHTML;
+            }
+
+            // Scroll to feedback
+            feedbackDiv.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function submitToGoogleSheets(studentName, answers, allCorrect, matrixType) {
+            // Prepare data for Google Sheets
+            const timestamp = new Date().toISOString();
+            const score = Object.values(answers).filter(a => a.isCorrect).length;
+            const totalQuestions = Object.keys(answers).length;
+            const percentage = Math.round((score / totalQuestions) * 100);
+
+            const submissionData = {
+                timestamp: timestamp,
+                studentName: studentName,
+                matrixType: matrixType,
+                score: score,
+                totalQuestions: totalQuestions,
+                percentage: percentage,
+                passed: allCorrect,
+                answers: answers
+            };
+
+            // Add loading indicator to button
+            const submitBtn = document.querySelector('.submit-btn');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = 'Submitting... <span class="loading"></span>';
+            submitBtn.disabled = true;
+
+            // Submit to Google Apps Script web app
+            const webAppUrl = 'https://script.google.com/macros/s/AKfycbxjQUWN3g2JkzbjP-LfcgfhqBl7_GGynChJva0dScQpf5TaHM3OY-_o-_XqODS6dQWh/exec'; // Replace with actual URL
+            
+            fetch(webAppUrl, {
+                method: 'POST',
+                mode: 'cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(submissionData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Successfully submitted to Google Sheets:', data);
+                // Reset button
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            })
+            .catch(error => {
+                console.error('Error submitting to Google Sheets:', error);
+                // Reset button even if there's an error
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            });
+        }
+    </script>
+</body>
+</html>
